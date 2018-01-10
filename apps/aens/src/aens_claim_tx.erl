@@ -36,7 +36,6 @@
 -define(NAME_CLAIM_TX_TYPE, <<"name_claim">>).
 -define(NAME_CLAIM_TX_VSN, 1).
 
-
 -opaque claim_tx() :: #ns_claim_tx{}.
 
 -export_type([claim_tx/0]).
@@ -92,7 +91,7 @@ process(#ns_claim_tx{account = AccountPubKey, fee = Fee,
 
     AccountsTree1 = aec_accounts_trees:enter(Account1, AccountsTree0),
 
-    Name0 = aens_state_tree:lookup(aens_names:hash_name(PlainName), NamesTree0),
+    Name0 = aens_state_tree:get(aens_names:hash_name(PlainName), NamesTree0),
     Name1 = aens_names:claim(ClaimTx, Name0, Height),
     NamesTree1 = aens_state_tree:enter(Name1, NamesTree0),
 

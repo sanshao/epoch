@@ -14,12 +14,14 @@
          hash_name/1,
          id/1,
          new/2,
+         transfer/2,
          serialize/1,
          deserialize/1]).
 
 %% Getters
 -export([expires/1,
-         owner/1]).
+         owner/1,
+         status/1]).
 
 %%%===================================================================
 %%% Types
@@ -49,7 +51,7 @@
 %%% API
 %%%===================================================================
 
--spec claim(aens_claim_tx:claim_tx(), binary(), height()) -> name().
+-spec claim(aens_claim_tx:claim_tx(), name(), height()) -> name().
 claim(ClaimTx, Name, BlockHeight) ->
     Expires = BlockHeight + aens_claim_tx:ttl(ClaimTx),
     Name#name{status  = claimed,
@@ -72,6 +74,10 @@ new(PreclaimTx, BlockHeight) ->
           owner   = aens_preclaim_tx:account(PreclaimTx),
           expires = Expires,
           status  = preclaimed}.
+
+-spec transfer(aens_transfer_tx:transfer_tx(), name()) -> name().
+transfer(TransferTx, Name) ->
+    Name#name{owner = aens_transfer_tx:recipient_account(TransferTx)}.
 
 -spec serialize(name()) -> binary().
 serialize(#name{} = N) ->
@@ -106,12 +112,12 @@ expires(N) -> N#name.expires.
 -spec owner(name()) -> pubkey().
 owner(N) -> N#name.owner.
 
+-spec status(name()) -> name_status().
+status(N) -> N#name.status.
+
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
 
 -spec hash(name()) -> binary().
 hash(N) -> N#name.hash.
-
--spec status(name()) -> name_status().
-status(N) -> N#name.status.

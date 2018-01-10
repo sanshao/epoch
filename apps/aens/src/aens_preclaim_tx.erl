@@ -47,16 +47,16 @@
 %%%===================================================================
 
 -spec new(map()) -> {ok, preclaim_tx()}.
-new(#{account := AccountPubKey,
-      nonce := Nonce,
+new(#{account   := AccountPubKey,
+      nonce     := Nonce,
       name_hash := NameHash,
-      ttl := TTL,
-      fee := Fee}) ->
-    {ok, #ns_preclaim_tx{account = AccountPubKey,
-                         nonce = Nonce,
+      ttl       := TTL,
+      fee       := Fee}) ->
+    {ok, #ns_preclaim_tx{account   = AccountPubKey,
+                         nonce     = Nonce,
                          name_hash = NameHash,
-                         ttl = TTL,
-                         fee = Fee}}.
+                         ttl       = TTL,
+                         fee       = Fee}}.
 
 -spec fee(preclaim_tx()) -> integer().
 fee(#ns_preclaim_tx{fee = Fee}) ->
