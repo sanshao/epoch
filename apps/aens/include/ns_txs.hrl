@@ -7,6 +7,7 @@
           account   :: pubkey(),
           nonce     :: integer(),
           name_hash :: binary(),
+          ttl       :: non_neg_integer(),
           fee       :: integer()
          }).
 
@@ -14,6 +15,7 @@
           account :: pubkey(),
           nonce   :: integer(),
           name    :: binary(),
+          ttl     :: non_neg_integer(),
           fee     :: integer()
          }).
 
@@ -21,6 +23,7 @@
           account   :: pubkey(),
           nonce     :: integer(),
           name_hash :: binary(),
+          ttl       :: non_neg_integer(),
           fee       :: pubkey()
          }).
 

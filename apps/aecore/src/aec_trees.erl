@@ -13,9 +13,11 @@
 -export([accounts/1,
          hash/1,
          new/0,
+         names/1,
          oracles/1,
          perform_pre_transformations/2,
          set_accounts/2,
+         set_names/2,
          set_oracles/2
         ]).
 
@@ -26,7 +28,8 @@
 -spec new() -> trees().
 new() ->
     #trees{accounts = aec_accounts_trees:empty(),
-           oracles  = aeo_state_tree:empty()
+           oracles  = aeo_state_tree:empty(),
+           names    = aens_state_tree:empty()
           }.
 
 hash(Trees) ->
@@ -48,6 +51,14 @@ oracles(Trees) ->
 set_oracles(Trees, Oracles) ->
     Trees#trees{oracles = Oracles}.
 
+-spec names(trees()) -> aens_state_tree:tree().
+names(Trees) ->
+    Trees#trees.names.
+
+-spec set_names(trees(), aens_state_tree:tree()) -> trees().
+set_names(Trees, Names) ->
+    Trees#trees{names = Names}.
+
 perform_pre_transformations(Trees, Height) ->
     set_oracles(Trees, aeo_state_tree:prune(Height, oracles(Trees))).
 
@@ -58,8 +69,10 @@ perform_pre_transformations(Trees, Height) ->
 internal_hash(Trees) ->
     AccountsHash = pad_empty(aec_accounts_trees:root_hash(accounts(Trees))),
     OraclesHash = pad_empty(aeo_state_tree:root_hash(oracles(Trees))),
+    NamesHash = pad_empty(aens_state_tree:root_hash(names(Trees))),
     List = lists:sort([ {<<"accounts"/utf8>>, AccountsHash}
                       , {<<"oracles"/utf8>> , OraclesHash}
+                      , {<<"names"/utf8>>   , NamesHash}
                       ]),
     TopTree = lists:foldl(fun({Key, Val}, Acc) ->
                                   aeu_mtrees:enter(Key, Val, Acc)
