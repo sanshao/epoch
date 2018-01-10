@@ -10,13 +10,16 @@
 -include_lib("apps/aecore/include/common.hrl").
 
 %% API
--export([new/2,
+-export([claim/3,
+         hash_name/1,
          id/1,
+         new/2,
          serialize/1,
          deserialize/1]).
 
 %% Getters
--export([expires/1]).
+-export([expires/1,
+         owner/1]).
 
 %%%===================================================================
 %%% Types
@@ -46,6 +49,21 @@
 %%% API
 %%%===================================================================
 
+-spec claim(aens_claim_tx:claim_tx(), binary(), height()) -> name().
+claim(ClaimTx, Name, BlockHeight) ->
+    Expires = BlockHeight + aens_claim_tx:ttl(ClaimTx),
+    Name#name{status  = claimed,
+              expires = Expires}.
+
+-spec hash_name(binary()) -> binary().
+hash_name(Name) ->
+    %% TODO: Implement NameHash as described in https://github.com/aeternity/protocol/blob/aens/drafts/AENS.md#hashing
+    Name.
+
+-spec id(name()) -> binary().
+id(N) ->
+    hash(N).
+
 -spec new(aens_preclaim_tx:preclaim_tx(), height()) -> name().
 new(PreclaimTx, BlockHeight) ->
     Expires = BlockHeight + aens_preclaim_tx:ttl(PreclaimTx),
@@ -54,10 +72,6 @@ new(PreclaimTx, BlockHeight) ->
           owner   = aens_preclaim_tx:account(PreclaimTx),
           expires = Expires,
           status  = preclaimed}.
-
--spec id(name()) -> binary().
-id(N) ->
-    hash(N).
 
 -spec serialize(name()) -> binary().
 serialize(#name{} = N) ->
@@ -89,15 +103,15 @@ deserialize(Bin) ->
 -spec expires(name()) -> height().
 expires(N) -> N#name.expires.
 
+-spec owner(name()) -> pubkey().
+owner(N) -> N#name.owner.
+
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
 
 -spec hash(name()) -> binary().
 hash(N) -> N#name.hash.
-
--spec owner(name()) -> pubkey().
-owner(N) -> N#name.owner.
 
 -spec status(name()) -> name_status().
 status(N) -> N#name.status.

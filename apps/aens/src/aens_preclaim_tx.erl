@@ -4,6 +4,7 @@
 %%%    Module defining the Naming System pre-claim transaction
 %%% @end
 %%%=============================================================================
+
 -module(aens_preclaim_tx).
 
 -include("ns_txs.hrl").
@@ -21,7 +22,8 @@
          signers/1,
          serialize/1,
          deserialize/1,
-         type/0
+         type/0,
+         for_client/1
         ]).
 
 %% Getters
@@ -34,6 +36,7 @@
 %%%===================================================================
 
 -define(NAME_PRECLAIM_TX_TYPE, <<"name_preclaim">>).
+-define(NAME_PRECLAIM_TX_VSN, 1).
 
 -opaque preclaim_tx() :: #ns_preclaim_tx{}.
 
@@ -83,7 +86,7 @@ check(#ns_preclaim_tx{account = AccountPubKey, nonce = Nonce,
 process(#ns_preclaim_tx{account = AccountPubKey, fee = Fee,
                         nonce = Nonce} = PreclaimTx, Trees0, Height) ->
     AccountsTree0 = aec_trees:accounts(Trees0),
-    NamesTree0  = aec_trees:names(Trees0),
+    NamesTree0 = aec_trees:names(Trees0),
 
     Account0 = aec_accounts_trees:get(AccountPubKey, AccountsTree0),
     {ok, Account1} = aec_accounts:spend(Account0, Fee, Nonce, Height),
@@ -102,16 +105,41 @@ signers(#ns_preclaim_tx{account = AccountPubKey}) ->
     [AccountPubKey].
 
 -spec serialize(preclaim_tx()) -> list(map()).
-serialize(#ns_preclaim_tx{}) ->
-    [#{}].
+serialize(#ns_preclaim_tx{account = AccountPubKey,
+                          nonce = Nonce,
+                          name_hash = NameHash,
+                          ttl = TTL,
+                          fee = Fee}) ->
+    [#{<<"type">>    => type()},
+     #{<<"vsn">>     => version()},
+     #{<<"account">> => AccountPubKey},
+     #{<<"nonce">>   => Nonce},
+     #{<<"hash">>    => NameHash},
+     #{<<"ttl">>     => TTL},
+     #{<<"fee">>     => Fee}].
 
 -spec deserialize(list(map())) -> preclaim_tx().
-deserialize([#{}]) ->
-    #ns_preclaim_tx{}.
+deserialize([#{<<"type">>    := ?NAME_PRECLAIM_TX_TYPE},
+             #{<<"vsn">>     := ?NAME_PRECLAIM_TX_VSN},
+             #{<<"account">> := AccountPubKey},
+             #{<<"nonce">>   := Nonce},
+             #{<<"hash">>    := NameHash},
+             #{<<"ttl">>     := TTL},
+             #{<<"fee">>     := Fee}]) ->
+    #ns_preclaim_tx{account   = AccountPubKey,
+                    nonce     = Nonce,
+                    name_hash = NameHash,
+                    ttl       = TTL,
+                    fee       = Fee}.
 
 -spec type() -> binary().
 type() ->
     ?NAME_PRECLAIM_TX_TYPE.
+
+-spec for_client(preclaim_tx()) -> map().
+for_client(#ns_preclaim_tx{}) ->
+    %% TODO: Implement it, this is something for HTTP API
+    #{}.
 
 %%%===================================================================
 %%% Getters
@@ -132,8 +160,9 @@ ttl(#ns_preclaim_tx{ttl = TTL}) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+
 ensure_not_occupied(NameHash, Trees, Height) ->
-    NamesTree  = aec_trees:names(Trees),
+    NamesTree = aec_trees:names(Trees),
     case aens_state_tree:lookup(NameHash, NamesTree) of
         {value, Name} ->
             case is_expired(Name, Height) of
@@ -148,3 +177,6 @@ ensure_not_occupied(NameHash, Trees, Height) ->
 
 is_expired(Name, Height) ->
     aens_names:expires(Name) < Height.
+
+version() ->
+    ?NAME_PRECLAIM_TX_VSN.

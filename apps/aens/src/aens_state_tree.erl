@@ -4,6 +4,7 @@
 %%% ADT for keeping the state of Naming System
 %%% @end
 %%%-------------------------------------------------------------------
+
 -module(aens_state_tree).
 
 %% API
