@@ -19,7 +19,7 @@
           fee     :: integer()
          }).
 
--record(ns_update_tx, {
+-record(ns_prolong_tx, {
           account   :: pubkey(),
           nonce     :: integer(),
           name_hash :: binary(),
