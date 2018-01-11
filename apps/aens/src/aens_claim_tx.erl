@@ -70,9 +70,10 @@ origin(#ns_claim_tx{account = AccountPubKey}) ->
 
 -spec check(claim_tx(), trees(), height()) -> {ok, trees()} | {error, term()}.
 check(#ns_claim_tx{account = AccountPubKey, nonce = Nonce,
-                   fee = Fee, name = Name}, Trees, Height) ->
+                   fee = Fee, name = Name, ttl = TTL}, Trees, Height) ->
     Checks =
-        [fun() -> aetx_utils:check_account(AccountPubKey, Trees, Height, Nonce, Fee) end,
+        [fun() -> assert_ttl(TTL) end,
+         fun() -> aetx_utils:check_account(AccountPubKey, Trees, Height, Nonce, Fee) end,
          fun() -> ensure_preclaimed(Name, AccountPubKey, Trees, Height) end],
 
     case aeu_validation:run(Checks) of
@@ -152,6 +153,14 @@ ttl(#ns_claim_tx{ttl = TTL}) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+
+assert_ttl(TTL) ->
+    case TTL =:= aec_governance:name_claim_tx_ttl() of
+        true ->
+            ok;
+        false ->
+            {error, wrong_ttl}
+    end.
 
 ensure_preclaimed(Name, AccountPubKey, Trees, Height) ->
     NamesTree = aec_trees:names(Trees),

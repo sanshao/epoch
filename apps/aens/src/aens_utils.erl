@@ -7,6 +7,8 @@
 
 -module(aens_utils).
 
+-include_lib("apps/aecore/include/common.hrl").
+
 %% API
 -export([ensure_name_not_expired/2,
          name_is_expired/2,
