@@ -158,30 +158,11 @@ ensure_preclaimed(Name, AccountPubKey, Trees, Height) ->
     case aens_state_tree:lookup(aens_names:hash_name(Name), NamesTree) of
         {value, Name} ->
             Checks =
-                [fun() -> is_not_expired(Name, Height) end,
-                 fun() -> is_owned_by_account(Name, AccountPubKey) end],
+                [fun() -> aens_utils:ensure_name_not_expired(Name, Height) end,
+                 fun() -> aens_utils:ensure_name_owned_by_account(Name, AccountPubKey) end],
             aeu_validation:run(Checks);
         none ->
             {error, name_not_preclaimed}
-    end.
-
-is_not_expired(Name, Height) ->
-    case is_expired(Name, Height) of
-        true ->
-            {error, name_expired};
-        false ->
-            ok
-    end.
-
-is_expired(Name, Height) ->
-    aens_names:expires(Name) < Height.
-
-is_owned_by_account(Name, AccountPubKey) ->
-    case aens_names:owner(Name) =:= AccountPubKey of
-        true ->
-            ok;
-        false ->
-            {error, name_owned_by_somebody_else}
     end.
 
 version() ->

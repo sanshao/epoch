@@ -157,34 +157,12 @@ ensure_claimed_and_owned(NameHash, AccountPubKey, Trees, Height) ->
     case aens_state_tree:lookup(NameHash, NamesTree) of
         {value, Name} ->
             Checks =
-                [fun() -> is_not_expired(Name, Height) end,
-                 fun() -> is_owned_by_account(Name, AccountPubKey) end,
+                [fun() -> aens_utils:ensure_name_not_expired(Name, Height) end,
+                 fun() -> aens_utils:ensure_name_owned_by_account(Name, AccountPubKey) end,
                  fun() -> is_claimed(Name) end],
             aeu_validation:run(Checks);
         none ->
             {error, name_not_claimed}
-    end.
-
-%% TODO: Maybe move to aens_utils (reuse in other txs)
-is_not_expired(Name, Height) ->
-    case is_expired(Name, Height) of
-        true ->
-            {error, name_expired};
-        false ->
-            ok
-    end.
-
-%% TODO: Maybe move to aens_utils (reuse in other txs)
-is_expired(Name, Height) ->
-    aens_names:expires(Name) < Height.
-
-%% TODO: Maybe move to aens_utils (reuse in other txs)
-is_owned_by_account(Name, AccountPubKey) ->
-    case aens_names:owner(Name) =:= AccountPubKey of
-        true ->
-            ok;
-        false ->
-            {error, name_owned_by_somebody_else}
     end.
 
 is_claimed(Name) ->

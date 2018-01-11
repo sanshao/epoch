@@ -165,7 +165,7 @@ ensure_not_occupied(NameHash, Trees, Height) ->
     NamesTree = aec_trees:names(Trees),
     case aens_state_tree:lookup(NameHash, NamesTree) of
         {value, Name} ->
-            case is_expired(Name, Height) of
+            case aens_utils:name_is_expired(Name, Height) of
                 true ->
                     ok;
                 false ->
@@ -174,9 +174,6 @@ ensure_not_occupied(NameHash, Trees, Height) ->
         none ->
             ok
     end.
-
-is_expired(Name, Height) ->
-    aens_names:expires(Name) < Height.
 
 version() ->
     ?NAME_PRECLAIM_TX_VSN.
