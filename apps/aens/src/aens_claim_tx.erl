@@ -89,7 +89,6 @@ process(#ns_claim_tx{account = AccountPubKey, fee = Fee,
 
     Account0 = aec_accounts_trees:get(AccountPubKey, AccountsTree0),
     {ok, Account1} = aec_accounts:spend(Account0, Fee, Nonce, Height),
-
     AccountsTree1 = aec_accounts_trees:enter(Account1, AccountsTree0),
 
     Name0 = aens_state_tree:get(aens_names:hash_name(PlainName), NamesTree0),

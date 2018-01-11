@@ -14,6 +14,7 @@
          hash_name/1,
          id/1,
          new/2,
+         revoke/3,
          transfer/2,
          serialize/1,
          deserialize/1]).
@@ -74,6 +75,12 @@ new(PreclaimTx, BlockHeight) ->
           owner   = aens_preclaim_tx:account(PreclaimTx),
           expires = Expires,
           status  = preclaimed}.
+
+-spec revoke(aens_revoke_tx:revoke_tx(), name(), height()) -> name().
+revoke(RevokeTx, Name, BlockHeight) ->
+    Expires = BlockHeight + aens_revoke_tx:ttl(RevokeTx),
+    Name#name{status = revoked,
+              expires = Expires}.
 
 -spec transfer(aens_transfer_tx:transfer_tx(), name()) -> name().
 transfer(TransferTx, Name) ->

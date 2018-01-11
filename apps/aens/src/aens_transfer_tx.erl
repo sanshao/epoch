@@ -73,7 +73,7 @@ check(#ns_transfer_tx{account = AccountPubKey, nonce = Nonce,
                       fee = Fee, name_hash = NameHash}, Trees, Height) ->
     Checks =
         [fun() -> aetx_utils:check_account(AccountPubKey, Trees, Height, Nonce, Fee) end,
-         fun() -> ensure_claimed_and_owned(NameHash, AccountPubKey, Trees, Height) end],
+         fun() -> aens_utils:ensure_claimed_and_owned(NameHash, AccountPubKey, Trees, Height) end],
 
     case aeu_validation:run(Checks) of
         ok              -> {ok, Trees};
@@ -151,23 +151,6 @@ recipient_account(#ns_transfer_tx{recipient_account = AccountPubKey}) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
-
-ensure_claimed_and_owned(NameHash, AccountPubKey, Trees, Height) ->
-    NamesTree = aec_trees:names(Trees),
-    case aens_state_tree:lookup(NameHash, NamesTree) of
-        {value, Name} ->
-            Checks =
-                [fun() -> aens_utils:ensure_name_not_expired(Name, Height) end,
-                 fun() -> aens_utils:ensure_name_owned_by_account(Name, AccountPubKey) end,
-                 fun() -> is_claimed(Name) end],
-            aeu_validation:run(Checks);
-        none ->
-            {error, name_not_claimed}
-    end.
-
-is_claimed(Name) ->
-    %% TODO Check if should compare to binary for deserialized tx
-    aens_names:status(Name) =:= claimed.
 
 version() ->
     ?NAME_TRANSFER_TX_VSN.

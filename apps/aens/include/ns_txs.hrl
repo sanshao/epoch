@@ -36,8 +36,9 @@
          }).
 
 -record(ns_revoke_tx, {
-          account :: pubkey(),
-          nonce :: integer(),
+          account   :: pubkey(),
+          nonce     :: integer(),
           name_hash :: binary(),
-          fee :: pubkey()
+          ttl       :: non_neg_integer(),
+          fee       :: pubkey()
          }).

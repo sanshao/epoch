@@ -7,7 +7,8 @@
          max_txs_in_block/0,
          minimum_tx_fee/0,
          name_preclaim_tx_ttl/0,
-         name_claim_tx_ttl/0]).
+         name_claim_tx_ttl/0,
+         name_revoke_tx_ttl/0]).
 
 -define(BLOCKS_TO_CHECK_DIFFICULTY_COUNT, 10).
 -define(EXPECTED_BLOCK_MINE_RATE, 300000). %% 60secs * 1000ms * 5 = 300000msecs
@@ -42,3 +43,8 @@ name_claim_tx_ttl() ->
     %% 480blocks blocks are mined dialy.
     %% Initial name claim is for 30 days, 30 * 480 = 14 400.
     14400.
+
+name_revoke_tx_ttl() ->
+    %% One block is mined every 5 mins, so 20 blocks are mined per hour.
+    %% Revoke state should remain in 48h: 20blocks * 24h * 14d = 6 720
+    6720.
