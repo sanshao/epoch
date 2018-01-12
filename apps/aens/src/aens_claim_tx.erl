@@ -45,16 +45,18 @@
 %%%===================================================================
 
 -spec new(map()) -> {ok, claim_tx()}.
-new(#{account := AccountPubKey,
-      nonce := Nonce,
-      name := Name,
-      ttl := TTL,
-      fee := Fee}) ->
-    {ok, #ns_claim_tx{account = AccountPubKey,
-                      nonce = Nonce,
-                      name = Name,
-                      ttl = TTL,
-                      fee = Fee}}.
+new(#{account  := AccountPubKey,
+      nonce    := Nonce,
+      name     := Name,
+      pointers := Pointers,
+      ttl      := TTL,
+      fee      := Fee}) ->
+    {ok, #ns_claim_tx{account  = AccountPubKey,
+                      nonce    = Nonce,
+                      name     = Name,
+                      pointers = Pointers,
+                      ttl      = TTL,
+                      fee      = Fee}}.
 
 -spec fee(claim_tx()) -> integer().
 fee(#ns_claim_tx{fee = Fee}) ->

@@ -6,10 +6,13 @@
          block_mine_reward/0,
          max_txs_in_block/0,
          minimum_tx_fee/0,
+         name_preclaim_tx_minimal_fee/0,
          name_preclaim_tx_ttl/0,
+         name_claim_tx_minimal_fee/0,
          name_claim_tx_ttl/0,
          name_prolong_tx_max_ttl/0,
          name_prolong_tx_single_block_fee/0,
+         name_expired_restricted_period/0,
          name_revoke_tx_ttl/0]).
 
 -define(BLOCKS_TO_CHECK_DIFFICULTY_COUNT, 10).
@@ -35,10 +38,19 @@ max_txs_in_block() ->
 minimum_tx_fee() ->
     1.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Naming system related vars
+
+name_preclaim_tx_minimal_fee() ->
+    2.
+
 name_preclaim_tx_ttl() ->
     %% One block is mined every 5 mins, so 20 blocks are mined per hour.
     %% Preclaim should expire in 48h: 20blocks * 48h = 960blocks
     960.
+
+name_claim_tx_minimal_fee() ->
+    4.
 
 name_claim_tx_ttl() ->
     %% One block is mined every 5 mins, so 20 blocks are mined per hour.
@@ -54,6 +66,9 @@ name_prolong_tx_max_ttl() ->
 
 name_prolong_tx_single_block_fee() ->
     0.0001.
+
+name_expired_restricted_period() ->
+    name_revoke_tx_ttl().
 
 name_revoke_tx_ttl() ->
     %% One block is mined every 5 mins, so 20 blocks are mined per hour.

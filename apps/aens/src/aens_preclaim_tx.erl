@@ -74,9 +74,10 @@ origin(#ns_preclaim_tx{account = AccountPubKey}) ->
 check(#ns_preclaim_tx{account = AccountPubKey, nonce = Nonce,
                       fee = Fee, name_hash = NameHash, ttl = TTL}, Trees, Height) ->
     Checks =
-        [fun() -> assert_ttl(TTL) end,
+        [fun() -> check_ttl(TTL) end,
+         fun() -> check_fee(Fee) end,
          fun() -> aetx_utils:check_account(AccountPubKey, Trees, Height, Nonce, Fee) end,
-         fun() -> ensure_not_occupied(NameHash, Trees, Height) end],
+         fun() -> check_name_available(NameHash, Trees, Height) end],
 
     case aeu_validation:run(Checks) of
         ok              -> {ok, Trees};
@@ -162,7 +163,7 @@ ttl(#ns_preclaim_tx{ttl = TTL}) ->
 %%% Internal functions
 %%%===================================================================
 
-assert_ttl(TTL) ->
+check_ttl(TTL) ->
     case TTL =:= aec_governance:name_preclaim_tx_ttl() of
         true ->
             ok;
@@ -170,19 +171,37 @@ assert_ttl(TTL) ->
             {error, wrong_ttl}
     end.
 
-ensure_not_occupied(NameHash, Trees, Height) ->
+check_fee(Fee) ->
+    case Fee >= aec_governance:name_preclaim_tx_minimal_fee() of
+        true ->
+            ok;
+        false ->
+            {error, too_low_fee}
+    end.
+
+check_name_available(NameHash, Trees, Height) ->
     NamesTree = aec_trees:names(Trees),
     case aens_state_tree:lookup(NameHash, NamesTree) of
         {value, Name} ->
-            case aens_utils:name_is_expired(Name, Height) of
+            case is_name_available(Name, Height) of
                 true ->
                     ok;
                 false ->
-                    {error, name_is_already_taken}
+                    {error, name_already_taken}
             end;
         none ->
             ok
     end.
+
+is_name_available(Name, Height) ->
+    NameOccupiedUntilHeight =
+        case aens_utils:name_is_claimed(Name) of
+            true ->
+                aens_names:expires(Name) + aec_governance:name_expired_restricted_period();
+            false ->
+                aens_names:expires(Name)
+        end,
+    NameOccupiedUntilHeight < Height.
 
 version() ->
     ?NAME_PRECLAIM_TX_VSN.

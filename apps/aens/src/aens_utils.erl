@@ -14,6 +14,7 @@
 -export([ensure_claimed_and_owned/4,
          ensure_name_not_expired/2,
          ensure_name_owned_by_account/2,
+         name_is_claimed/1,
          name_is_expired/2]).
 
 %%%===================================================================
@@ -28,7 +29,7 @@ ensure_claimed_and_owned(NameHash, AccountPubKey, Trees, Height) ->
             Checks =
                 [fun() -> ensure_name_not_expired(Name, Height) end,
                  fun() -> ensure_name_owned_by_account(Name, AccountPubKey) end,
-                 fun() -> is_claimed(Name) end],
+                 fun() -> name_is_claimed(Name) end],
             aeu_validation:run(Checks);
         none ->
             {error, name_not_claimed}
@@ -60,6 +61,6 @@ name_is_expired(Name, Height) ->
 %%% Internal functions
 %%%===================================================================
 
-is_claimed(Name) ->
+name_is_claimed(Name) ->
     %% TODO Check if should compare to binary for deserialized tx
     aens_names:status(Name) =:= claimed.
