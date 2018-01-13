@@ -197,11 +197,15 @@ is_name_available(Name, Height) ->
     NameOccupiedUntilHeight =
         case aens_utils:name_is_claimed(Name) of
             true ->
-                aens_names:expires(Name) + aec_governance:name_expired_restricted_period();
+                aens_names:expires(Name)
+                    + expired_name_restricted_period();
             false ->
                 aens_names:expires(Name)
         end,
     NameOccupiedUntilHeight < Height.
+
+expired_name_restricted_period() ->
+    aec_governance:name_revoke_tx_ttl().
 
 version() ->
     ?NAME_PRECLAIM_TX_VSN.

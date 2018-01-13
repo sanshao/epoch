@@ -72,10 +72,10 @@ origin(#ns_prolong_tx{account = AccountPubKey}) ->
 check(#ns_prolong_tx{account = AccountPubKey, nonce = Nonce,
                      fee = Fee, name_hash = NameHash, ttl = TTL}, Trees, Height) ->
     Checks =
-        [fun() -> assert_ttl(TTL) end,
+        [fun() -> check_ttl(TTL) end,
+         fun() -> check_fee(TTL, Fee - aec_governance:name_prolong_fixed_fee()) end,
          fun() -> aetx_utils:check_account(AccountPubKey, Trees, Height, Nonce, Fee) end,
-         fun() -> assert_ttl_fee(TTL, Fee) end,
-         fun() -> aens_utils:ensure_claimed_and_owned(NameHash, AccountPubKey, Trees, Height) end],
+         fun() -> aens_utils:check_claimed_and_owned(NameHash, AccountPubKey, Trees, Height) end],
 
     case aeu_validation:run(Checks) of
         ok              -> {ok, Trees};
@@ -154,7 +154,7 @@ ttl(#ns_prolong_tx{ttl = TTL}) ->
 %%% Internal functions
 %%%===================================================================
 
-assert_ttl(TTL) ->
+check_ttl(TTL) ->
     case TTL =< aec_governance:name_prolong_tx_max_ttl() of
         true ->
             ok;
@@ -162,7 +162,7 @@ assert_ttl(TTL) ->
             {error, wrong_ttl}
     end.
 
-assert_ttl_fee(TTL, Fee) ->
+check_fee(TTL, Fee) ->
     case ttl_fee(TTL) =< Fee of
         true ->
             ok;

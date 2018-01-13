@@ -74,9 +74,10 @@ origin(#ns_claim_tx{account = AccountPubKey}) ->
 check(#ns_claim_tx{account = AccountPubKey, nonce = Nonce,
                    fee = Fee, name = Name, ttl = TTL}, Trees, Height) ->
     Checks =
-        [fun() -> assert_ttl(TTL) end,
+        [fun() -> check_ttl(TTL) end,
+         fun() -> check_fee(Fee) end,
          fun() -> aetx_utils:check_account(AccountPubKey, Trees, Height, Nonce, Fee) end,
-         fun() -> ensure_preclaimed(Name, AccountPubKey, Trees, Height) end],
+         fun() -> check_preclaimed(Name, AccountPubKey, Trees, Height) end],
 
     case aeu_validation:run(Checks) of
         ok              -> {ok, Trees};
@@ -155,7 +156,7 @@ ttl(#ns_claim_tx{ttl = TTL}) ->
 %%% Internal functions
 %%%===================================================================
 
-assert_ttl(TTL) ->
+check_ttl(TTL) ->
     case TTL =:= aec_governance:name_claim_tx_ttl() of
         true ->
             ok;
@@ -163,13 +164,21 @@ assert_ttl(TTL) ->
             {error, wrong_ttl}
     end.
 
-ensure_preclaimed(Name, AccountPubKey, Trees, Height) ->
+check_fee(Fee) ->
+    case Fee >= aec_governance:name_claim_tx_minimal_fee() of
+        true ->
+            ok;
+        false ->
+            {error, too_low_fee}
+    end.
+
+check_preclaimed(Name, AccountPubKey, Trees, Height) ->
     NamesTree = aec_trees:names(Trees),
     case aens_state_tree:lookup(aens_names:hash_name(Name), NamesTree) of
         {value, Name} ->
             Checks =
-                [fun() -> aens_utils:ensure_name_not_expired(Name, Height) end,
-                 fun() -> aens_utils:ensure_name_owned_by_account(Name, AccountPubKey) end],
+                [fun() -> aens_utils:check_name_not_expired(Name, Height) end,
+                 fun() -> aens_utils:check_name_owned_by_account(Name, AccountPubKey) end],
             aeu_validation:run(Checks);
         none ->
             {error, name_not_preclaimed}

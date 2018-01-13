@@ -74,7 +74,7 @@ check(#ns_revoke_tx{account = AccountPubKey, nonce = Nonce,
     Checks =
         [fun() -> assert_ttl(TTL) end,
          fun() -> aetx_utils:check_account(AccountPubKey, Trees, Height, Nonce, Fee) end,
-         fun() -> aens_utils:ensure_claimed_and_owned(NameHash, AccountPubKey, Trees, Height) end],
+         fun() -> aens_utils:check_claimed_and_owned(NameHash, AccountPubKey, Trees, Height) end],
 
     case aeu_validation:run(Checks) of
         ok              -> {ok, Trees};

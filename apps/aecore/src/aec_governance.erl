@@ -10,9 +10,9 @@
          name_preclaim_tx_ttl/0,
          name_claim_tx_minimal_fee/0,
          name_claim_tx_ttl/0,
-         name_prolong_tx_max_ttl/0,
+         name_prolong_fixed_fee/0,
          name_prolong_tx_single_block_fee/0,
-         name_expired_restricted_period/0,
+         name_prolong_tx_max_ttl/0,
          name_revoke_tx_ttl/0]).
 
 -define(BLOCKS_TO_CHECK_DIFFICULTY_COUNT, 10).
@@ -39,7 +39,7 @@ minimum_tx_fee() ->
     1.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Naming system related vars
+%% Naming system variables
 
 name_preclaim_tx_minimal_fee() ->
     2.
@@ -58,17 +58,17 @@ name_claim_tx_ttl() ->
     %% Initial name claim is for 30 days, 30 * 480 = 14 400.
     14400.
 
+name_prolong_fixed_fee() ->
+    1.
+
+name_prolong_tx_single_block_fee() ->
+    0.0001.
+
 name_prolong_tx_max_ttl() ->
     %% One block is mined every 5 mins, so 20 blocks are mined per hour.
     %% 480blocks blocks are mined dialy.
     %% Max prolong time is 365 days, 365 * 480 = 175 200
     175200.
-
-name_prolong_tx_single_block_fee() ->
-    0.0001.
-
-name_expired_restricted_period() ->
-    name_revoke_tx_ttl().
 
 name_revoke_tx_ttl() ->
     %% One block is mined every 5 mins, so 20 blocks are mined per hour.
